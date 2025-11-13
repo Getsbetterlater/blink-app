@@ -1,7 +1,7 @@
 from anthropic import Anthropic
-from config import ANTHROPIC_API_KEY
+import os
 
-client = Anthropic(api_key=ANTHROPIC_API_KEY)
+client = Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 
 def extract_client_names(note_content):
     message = client.messages.create(
