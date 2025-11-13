@@ -3,6 +3,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from database import SessionLocal
 from models import Note, Client, NoteClient
 from ai import extract_client_names
+from models import Base
+from database import engine
+
+# Create tables if they don't exist
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
