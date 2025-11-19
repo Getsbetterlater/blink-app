@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from database import SessionLocal
 from models import Note, Client, NoteClient
 from ai import extract_client_names
@@ -20,7 +21,7 @@ app.add_middleware(
 
 @app.get("/")
 def home():
-    return {"message": "Blink app is running"}
+    return FileResponse("index.html")
 
 @app.post("/notes")
 def create_note(content: str):
@@ -55,13 +56,13 @@ def create_note(content: str):
     
     # Get the data before closing
     result = {
-        "id": note.id,
+        "note_id": note.id,
         "content": note.content,
-        "detected_clients": detected_clients
+        "clients": detected_clients
     }
-    
+
     db.close()
-    
+
     return result
 
 @app.get("/search")
@@ -73,7 +74,7 @@ def search_notes(client_name: str):
     
     if not client:
         db.close()
-        return {"notes": [], "message": "No client found with that name"}
+        return {"client_name": client_name, "notes": []}
     
     # Find all notes linked to this client
     note_links = db.query(NoteClient).filter(NoteClient.client_id == client.id).all()
@@ -89,5 +90,5 @@ def search_notes(client_name: str):
             })
     
     db.close()
-    
-    return {"client": client.name, "notes": notes}
+
+    return {"client_name": client.name, "notes": notes}
