@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
+from pydantic import BaseModel
 from database import SessionLocal
 from models import Note, Client, NoteClient
 from ai import extract_client_names
@@ -9,6 +10,10 @@ from database import engine
 
 # Create tables if they don't exist
 Base.metadata.create_all(bind=engine)
+
+# Pydantic models for request/response
+class NoteRequest(BaseModel):
+    content: str
 
 app = FastAPI()
 
@@ -24,17 +29,17 @@ def home():
     return FileResponse("index.html")
 
 @app.post("/notes")
-def create_note(content: str):
+def create_note(request: NoteRequest):
     db = SessionLocal()
-    
+
     # Save the note
-    note = Note(content=content)
+    note = Note(content=request.content)
     db.add(note)
     db.commit()
     db.refresh(note)
-    
+
     # Extract client names using AI
-    names = extract_client_names(content)
+    names = extract_client_names(request.content)
     
     detected_clients = []
     for name in names:
